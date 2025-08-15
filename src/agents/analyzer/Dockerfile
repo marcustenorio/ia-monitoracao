@@ -1,15 +1,18 @@
-# src/agents/collector/Dockerfile
-FROM python:3.9-slim
+FROM python:3.11-slim
 
+# Definir diretório de trabalho
 WORKDIR /app
 
-# Copia as dependências
-COPY requirements.txt .
+# Copiar arquivos de módulos comuns
+COPY common /app/common
+COPY infrastructure /app/infrastructure
 
+# Copiar arquivos específicos do analyzer
+COPY agents/analyzer/requirements.txt /app/
+COPY agents/analyzer/main.py /app/
+
+# Instalar dependências
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o código-fonte do agente
-COPY . .
-
-# Comando de execução
+# Comando padrão
 CMD ["python", "main.py"]

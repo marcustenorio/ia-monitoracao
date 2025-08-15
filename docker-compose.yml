@@ -114,6 +114,22 @@ services:
       - zabbix-net
     command: ["python", "main.py"]
 
+  analyzer-job:
+    build:
+      context: ./src   # <-- assim o build enxerga toda a pasta src/
+      dockerfile: agents/analyzer/Dockerfile
+    container_name: analyzer-job
+    environment:
+      INPUT_FILE: /data/processed/anomalies_dataset.csv
+      OUTPUT_FILE: /data/processed/dataset_ready.csv
+    volumes:
+      - ./data:/data
+      - ./src/infrastructure:/app/infrastructure
+    depends_on:
+      - collector-job
+    networks:
+      - zabbix-net
+
   prometheus-agent:
     image: zabbix/zabbix-agent2:latest
     container_name: prometheus-agent
