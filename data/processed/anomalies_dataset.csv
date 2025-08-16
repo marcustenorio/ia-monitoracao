@@ -46,7 +46,7 @@ triggerid,description,priority,lastchange,hosts
 22385,Linux: System name has changed,1,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
 22386,Linux: System time is out of sync,2,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
 22387,Linux: Operating system description has changed,1,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
-22388,Linux: {HOST.NAME} has been restarted,2,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
+22388,Linux: {HOST.NAME} has been restarted,2,1755381333,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
 22389,Linux: /etc/passwd has been changed,1,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
 22390,Linux: High memory utilization,3,0,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
 22391,Linux: Zabbix agent is not available,3,1755312506,"[{'hostid': '10084', 'name': 'Zabbix server'}]"
