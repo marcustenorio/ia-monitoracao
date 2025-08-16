@@ -1,0 +1,88 @@
+triggerid,description,priority,lastchange,hosts,label
+0.0,Zabbix server: Excessive value cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0187405907698696,Zabbix server: Utilization of vmware collector processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0203498935783626,Zabbix server: Utilization of alerter processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.020401806572185,Zabbix server: Utilization of configuration syncer processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.020557545553652,Zabbix server: Utilization of escalator processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0206094585474744,Zabbix server: Utilization of history syncer processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0206613715412967,Zabbix server: Utilization of housekeeper processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0207132845351191,Zabbix server: Utilization of http poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0207651975289414,Zabbix server: Utilization of icmp pinger processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0208171105227638,Zabbix server: Utilization of ipmi poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0208690235165862,Zabbix server: Utilization of java poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0209728495042309,Zabbix server: Utilization of poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0210247624980532,Zabbix server: Utilization of proxy poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0210766754918756,Zabbix server: Utilization of self-monitoring processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0211285884856979,Zabbix server: Utilization of snmp trapper processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0211805014795203,Zabbix server: Utilization of timer processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0212324144733426,Zabbix server: Utilization of trapper processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.021284327467165,Zabbix server: Utilization of unreachable poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0213362404609873,Zabbix server: More than 100 items have been missing data for over 10 minutes,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0213881534548097,Zabbix server: Excessive configuration cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.021440066448632,Zabbix server: Excessive history cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0214919794424544,Zabbix server: Excessive history index cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0215438924362768,Zabbix server: Excessive trends cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0239838031459274,Zabbix server: Excessive vmware cache usage,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0250739760161968,Zabbix server: Zabbix value cache working in low-memory mode,0.75,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",1
+0.0251778020038415,Zabbix server: Utilization of task manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0253335409853086,Zabbix server: Utilization of ipmi manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.025541192960598,Zabbix server: Utilization of alert manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0256969319420651,Zabbix server: Utilization of preprocessing manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.0257488449358874,Zabbix server: Utilization of preprocessing worker processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.144266209832321,Zabbix server: Utilization of LLD manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.1443700358199657,Zabbix server: Utilization of LLD worker processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.1660696672377096,Zabbix server: Utilization of alert syncer processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.2316357784353423,Zabbix server: Utilization of availability manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.2316876914291647,Zabbix server: Utilization of history poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.2832892072885843,Zabbix server: Utilization of report manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.2833411202824067,Zabbix server: Utilization of report writer processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.3065981415148212,Zabbix server: Utilization of service manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.3066500545086435,Zabbix server: Utilization of trigger housekeeper processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.3067019675024658,Zabbix server: Version has changed,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4216892488189794,Zabbix server: Utilization of ODBC poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4831542335046462,Linux: Configured max number of open filedescriptors is too low,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4832061464984685,Linux: Configured max number of processes is too low,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4832580594922909,Linux: High CPU utilization,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4833099724861133,Linux: System name has changed,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4833618854799356,Linux: System time is out of sync,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.483413798473758,Linux: Operating system description has changed,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4834657114675803,Linux: {HOST.NAME} has been restarted,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4835176244614027,Linux: /etc/passwd has been changed,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.483569537455225,Linux: High memory utilization,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4836214504490474,Linux: Zabbix agent is not available,0.5,1.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4836733634428697,Linux: Getting closer to process limit,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4837252764366921,Linux: High swap space usage,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4837771894305144,Linux: Lack of available memory,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.4838291024243368,Linux: Load average is too high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5236463686860822,Linux: Number of installed packages has been changed,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5269168872968905,Zabbix server: Utilization of connector manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5269688002907128,Zabbix server: Utilization of connector worker processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5301874059076987,Zabbix server: Utilization of discovery manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5302393189015211,Zabbix server: Utilization of discovery worker processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5307584488397445,Zabbix server: Utilization of agent poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5308103618335669,Zabbix server: Utilization of http agent poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5357940092405129,Zabbix server: Utilization of snmp poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5547941649794944,Zabbix server: Utilization of browser poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5548460779733168,Zabbix server: Utilization of configuration syncer worker processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5548979909671391,Zabbix server: Utilization of internal poller processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.5549499039609614,Zabbix server: Utilization of proxy group manager processes is high,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.6027098582775269,Zabbix server: Wrong template assigned,1.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",1
+0.9990655661111976,Linux: Interface eth0: Ethernet has changed to lower speed than it was before,0.0,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.99911747910502,Linux: Interface eth0: High bandwidth usage,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9991693920988424,Linux: Interface eth0: High error rate,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9992213050926648,Linux: Interface eth0: Link down,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9992732180864872,Linux: FS [/etc/resolv.conf]: Running out of free inodes,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9993251310803094,Linux: FS [/etc/hostname]: Running out of free inodes,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9993770440741316,Linux: FS [/etc/hosts]: Running out of free inodes,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.999428957067954,Linux: FS [/etc/resolv.conf]: Running out of free inodes,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9994808700617764,Linux: FS [/etc/hostname]: Running out of free inodes,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9995327830555988,Linux: FS [/etc/hosts]: Running out of free inodes,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9995846960494212,Linux: FS [/etc/resolv.conf]: Space is critically low,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9996366090432436,Linux: FS [/etc/hostname]: Space is critically low,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.999688522037066,Linux: FS [/etc/hosts]: Space is critically low,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9997404350308884,Linux: FS [/etc/resolv.conf]: Space is low,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9997923480247106,Linux: FS [/etc/hostname]: Space is low,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.999844261018533,Linux: FS [/etc/hosts]: Space is low,0.25,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9998961740123552,Linux: FS [/etc/resolv.conf]: Filesystem has become read-only,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+0.9999480870061777,Linux: FS [/etc/hostname]: Filesystem has become read-only,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0
+1.0,Linux: FS [/etc/hosts]: Filesystem has become read-only,0.5,0.0,"[{'hostid': '10084', 'name': 'Zabbix server'}]",0

@@ -1,0 +1,9 @@
+{
+  "accuracy": 1.0,
+  "precision_0": 1.0,
+  "recall_0": 1.0,
+  "precision_1": null,
+  "recall_1": null,
+  "macro_avg_f1": 1.0,
+  "weighted_avg_f1": 1.0
+}

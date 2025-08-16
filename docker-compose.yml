@@ -129,6 +129,61 @@ services:
       - collector-job
     networks:
       - zabbix-net
+  ml-trainer-job:
+    build:
+      context: ./src            # importante: contexto em ./src (igual ao analyzer)
+      dockerfile: agents/ml_trainer/Dockerfile
+    container_name: ml-trainer-job
+    environment:
+      TRAIN_INPUT: /data/processed/dataset_labeled.csv
+      MODEL_PATH: /data/models/anomaly_model.pkl
+      METRICS_PATH: /data/models/metrics.json
+      FEATURE_IMP_PATH: /data/models/feature_importances.csv
+    volumes:
+      - ./data:/data
+      - ./src/infrastructure:/app/infrastructure
+    depends_on:
+      - analyzer-job
+    networks:
+      - zabbix-net
+    restart: "no"
+  orchestrator-job:
+    build:
+      context: ./src
+      dockerfile: agents/orchestrator/Dockerfile
+    container_name: orchestrator-job
+    environment:
+      ORCH_INPUT: /data/processed/dataset_labeled.csv
+      MODEL_PATH: /data/models/anomaly_model.pkl
+      ACTIONS_PENDING: /data/actions/pending_actions.jsonl
+      ACTIONS_EXECUTED: /data/actions/executed_actions.jsonl
+      THRESHOLD: "0.7"
+      PRIORITY_MIN: "0.7"
+    volumes:
+      - ./data:/data
+      - ./src/infrastructure:/app/infrastructure
+    depends_on:
+      - analyzer-job
+      - ml-trainer-job
+    networks:
+      - zabbix-net
+    restart: "no"
+  executor-job:
+    build:
+      context: ./src
+      dockerfile: agents/executor/Dockerfile
+    container_name: executor-job
+    environment:
+      ACTIONS_PENDING: /data/actions/pending_actions.jsonl
+      ACTIONS_EXECUTED: /data/actions/executed_actions.jsonl
+    volumes:
+      - ./data:/data
+      - ./src/infrastructure:/app/infrastructure
+    depends_on:
+      - orchestrator-job
+    networks:
+      - zabbix-net
+    restart: "no"
 
   prometheus-agent:
     image: zabbix/zabbix-agent2:latest

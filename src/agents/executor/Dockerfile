@@ -1,15 +1,12 @@
-# src/agents/collector/Dockerfile
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copia as dependências
-COPY requirements.txt .
-
+COPY agents/executor/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copia o código-fonte do agente
-COPY . .
+COPY infrastructure /app/infrastructure
+COPY agents/executor/main.py /app/main.py
 
-# Comando de execução
 CMD ["python", "main.py"]
+
