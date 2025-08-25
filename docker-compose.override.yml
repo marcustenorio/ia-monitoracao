@@ -1,0 +1,13 @@
+# docker-compose.override.yml
+services:
+  cpu-stress:
+    image: polinux/stress
+    container_name: cpu-stress
+    # Ajuste os parâmetros conforme necessidade:
+    command: ["stress", "--cpu", "4", "--timeout", "120"]  # 4 vCPUs por 120s
+    # Opcional: limitar consumo do container (não obrigatório)
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+

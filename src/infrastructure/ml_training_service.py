@@ -1,106 +1,222 @@
-import json
+# src/infrastructure/ml_training_service.py
+# Serviço de treinamento com engenharia de features, métricas e gráficos
+# Compatível com seu main.py atual (train_and_save)
+
 import os
-from typing import Dict, List, Optional
+import json
+import ast
+from typing import Optional, Tuple, List
 
 import joblib
-import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    classification_report,
+    precision_recall_fscore_support,
+    roc_auc_score,
+    roc_curve,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+)
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+
+# backend headless para salvar imagens em container/servidor
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+
+
+# ----------------------------
+# Helpers de engenharia de features
+# ----------------------------
+
+def _parse_hosts_len(x: str) -> int:
+    """
+    Converte a string do tipo "[{'hostid': '10084', 'name': 'Zabbix server'}]"
+    no tamanho da lista (quantos hosts). Em caso de erro, retorna 1.
+    """
+    try:
+        v = ast.literal_eval(str(x))
+        return len(v) if isinstance(v, list) else 1
+    except Exception:
+        return 1
+
+
+def _build_numeric_view(df: pd.DataFrame) -> Tuple[pd.DataFrame, List[str]]:
+    """
+    Cria uma visão NUMÉRICA do dataset:
+      - desc_len: len(description)
+      - host_count: len(lista de hosts)
+      - priority, triggerid, lastchange convertidos para float
+    """
+    work = df.copy()
+
+    work["desc_len"] = work["description"].astype(str).str.len()
+    work["host_count"] = work["hosts"].astype(str).apply(_parse_hosts_len)
+
+    for col in ["priority", "triggerid", "lastchange", "desc_len", "host_count"]:
+        work[col] = pd.to_numeric(work[col], errors="coerce").fillna(0.0)
+
+    features = ["priority", "triggerid", "lastchange", "desc_len", "host_count"]
+    X = work[features]
+    return X, features
+
+
+# ----------------------------
+# Serviço principal
+# ----------------------------
 
 class MLTrainingService:
-    """
-    Adaptador (infraestrutura) responsável por treinar e persistir o modelo.
-    O agente (ml_trainer) apenas chama este serviço.
-    """
+    def __init__(self):
+        """Serviço de treinamento com features numéricas embutidas."""
+        pass
 
-    def __init__(self,
-                 label_column: str = "label",
-                 feature_columns: Optional[List[str]] = None,
-                 test_size: float = 0.2,
-                 random_state: int = 42):
-        self.label_column = label_column
-        self.feature_columns = feature_columns
-        self.test_size = test_size
-        self.random_state = random_state
+    def train_and_save(
+        self,
+        input_path: str,
+        model_path: str,
+        metrics_path: str,
+        feature_imp_path: Optional[str] = None,
+        *,
+        test_size: float = 0.3,
+        random_state: int = 42,
+        n_estimators: int = 200,
+        max_depth: Optional[int] = None,
+        generate_plots: bool = True,            # <-- habilita gráficos por padrão
+        plots_dir: Optional[str] = None,        # ex.: "/data/reports"
+    ):
+        """
+        Treina RandomForest e salva artefatos (modelo, métricas, importâncias e gráficos).
 
-    def _select_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Caso não especificado, escolhe features numéricas automaticamente (exclui a label)
-        if self.feature_columns is not None:
-            cols = [c for c in self.feature_columns if c in df.columns]
-            return df[cols]
-        else:
-            numeric = df.select_dtypes(include=[np.number]).columns.tolist()
-            numeric = [c for c in numeric if c != self.label_column]
-            return df[numeric]
+        Args (compatíveis com seu main.py):
+          - input_path: CSV de entrada (DEVE conter 'label' 0/1)
+          - model_path: caminho para salvar o modelo .pkl
+          - metrics_path: caminho para salvar métricas em JSON
+          - feature_imp_path: caminho para salvar importâncias (CSV)
 
-    def train_and_save(self,
-                       input_csv: str,
-                       model_output_path: str,
-                       metrics_output_path: Optional[str] = None,
-                       feature_importances_path: Optional[str] = None) -> Dict:
-        if not os.path.exists(input_csv):
-            raise FileNotFoundError(f"Arquivo de entrada não encontrado: {input_csv}")
+        Kwargs úteis:
+          - test_size, random_state, n_estimators, max_depth
+          - generate_plots: se True, salva ROC e Matriz de Confusão
+          - plots_dir: diretório para gráficos (obrigatório se generate_plots=True)
+        """
+        # 1) Carregar dataset
+        df = pd.read_csv(input_path)
+        if "label" not in df.columns:
+            raise ValueError("O dataset precisa conter a coluna 'label' (0/1).")
 
-        df = pd.read_csv(input_csv)
-        if self.label_column not in df.columns:
-            raise ValueError(f"Coluna de label '{self.label_column}' não encontrada em {input_csv}")
+        y = pd.to_numeric(df["label"], errors="coerce").fillna(0).astype(int)
 
-        X = self._select_features(df)
-        y = df[self.label_column].astype(int)
+        # 2) Features numéricas
+        X, feat_names = _build_numeric_view(df)
 
-        if X.empty:
-            raise ValueError("Nenhuma feature numérica disponível para treino. Verifique o dataset.")
-
+        # 3) Split
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=self.test_size, random_state=self.random_state, stratify=y
+            X, y, test_size=test_size, random_state=random_state, stratify=y
         )
 
-        # Baseline simples
+        # 4) Modelo
         clf = RandomForestClassifier(
-            n_estimators=200,
-            max_depth=None,
-            random_state=self.random_state,
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            class_weight="balanced_subsample",
+            random_state=random_state,
             n_jobs=-1,
         )
         clf.fit(X_train, y_train)
 
-        # Avaliação
+        # 5) Avaliação
+        # Relatório padrão (usa threshold interno do RF) e evita warnings nas métricas
         y_pred = clf.predict(X_test)
-        report = classification_report(y_test, y_pred, output_dict=True)
+        report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
 
-        # Persistência
-        os.makedirs(os.path.dirname(model_output_path), exist_ok=True)
-        joblib.dump({"model": clf, "features": list(X.columns)}, model_output_path)
+        # Probabilidade para ROC e threshold alternativo
+        diagnostics = {"features": feat_names}
+        try:
+            y_proba = clf.predict_proba(X_test)[:, 1]
 
-        # Métricas
-        metrics = {
-            "accuracy": report.get("accuracy"),
-            "precision_0": report.get("0", {}).get("precision"),
-            "recall_0": report.get("0", {}).get("recall"),
-            "precision_1": report.get("1", {}).get("precision"),
-            "recall_1": report.get("1", {}).get("recall"),
-            "macro_avg_f1": report.get("macro avg", {}).get("f1-score"),
-            "weighted_avg_f1": report.get("weighted avg", {}).get("f1-score"),
-        }
+            # Métricas com threshold alternativo 0.4 (diagnóstico)
+            y_pred_alt = (y_proba >= 0.4).astype(int)
+            p, r, f1, _ = precision_recall_fscore_support(
+                y_test, y_pred_alt, average="binary", zero_division=0
+            )
+            try:
+                auc = roc_auc_score(y_test, y_proba)
+            except Exception:
+                auc = None
 
-        if metrics_output_path:
-            with open(metrics_output_path, "w") as f:
-                json.dump(metrics, f, indent=2)
+            diagnostics["alt_threshold_metrics"] = {
+                "thr": 0.4,
+                "precision": float(p),
+                "recall": float(r),
+                "f1": float(f1),
+                "roc_auc": (float(auc) if auc is not None else None),
+            }
+        except Exception:
+            y_proba = None  # modelo sem predict_proba
 
-        # Importâncias (se disponíveis)
-        if hasattr(clf, "feature_importances_") and feature_importances_path:
-            imp_df = pd.DataFrame({
-                "feature": X.columns,
-                "importance": clf.feature_importances_
-            }).sort_values("importance", ascending=False)
-            imp_df.to_csv(feature_importances_path, index=False)
+        report["_diagnostics_"] = diagnostics
+
+        # 6) Persistência (modelo/métricas/importâncias)
+        os.makedirs(os.path.dirname(model_path), exist_ok=True)
+        os.makedirs(os.path.dirname(metrics_path), exist_ok=True)
+        if feature_imp_path:
+            os.makedirs(os.path.dirname(feature_imp_path), exist_ok=True)
+
+        joblib.dump(clf, model_path)
+
+        with open(metrics_path, "w") as f:
+            json.dump(report, f, indent=2, ensure_ascii=False)
+
+        if feature_imp_path and hasattr(clf, "feature_importances_"):
+            fi = pd.DataFrame(
+                {"feature": feat_names, "importance": clf.feature_importances_}
+            ).sort_values("importance", ascending=False)
+            fi.to_csv(feature_imp_path, index=False)
+
+        # 7) Gráficos (opcional)
+        if generate_plots:
+            if not plots_dir:
+                # usa o diretório das métricas por padrão
+                plots_dir = os.path.dirname(metrics_path)
+            os.makedirs(plots_dir, exist_ok=True)
+
+            # ROC (se houver proba)
+            if y_proba is not None:
+                try:
+                    fpr, tpr, _ = roc_curve(y_test, y_proba)
+                    plt.figure()
+                    plt.plot(fpr, tpr, linewidth=2)
+                    plt.plot([0, 1], [0, 1], "--")
+                    plt.xlabel("FPR")
+                    plt.ylabel("TPR")
+                    plt.title("ROC Curve")
+                    plt.savefig(os.path.join(plots_dir, "roc_curve.png"), bbox_inches="tight")
+                    plt.close()
+                except Exception as e:
+                    print(f"[ml_trainer] aviso: falha ao salvar ROC: {e}")
+
+            # Matriz de confusão (threshold 0.5)
+            try:
+                cm = confusion_matrix(y_test, y_pred)
+                disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+                disp.plot()
+                plt.title("Confusion Matrix (thr=0.5)")
+                plt.savefig(os.path.join(plots_dir, "confusion_matrix.png"), bbox_inches="tight")
+                plt.close()
+            except Exception as e:
+                print(f"[ml_trainer] aviso: falha ao salvar matriz de confusão: {e}")
+
+        # Logs úteis
+        print("[ml_trainer] features usadas:", feat_names)
+        print("[ml_trainer] modelo salvo em:", model_path)
+        print("[ml_trainer] métricas em:", metrics_path)
+        if feature_imp_path:
+            print("[ml_trainer] importâncias em:", feature_imp_path)
 
         return {
-            "features_used": list(X.columns),
-            "n_train": len(X_train),
-            "n_test": len(X_test),
-            "metrics": metrics
+            "model_path": model_path,
+            "metrics_path": metrics_path,
+            "feature_importances_path": feature_imp_path,
+            "features": feat_names,
+            "report": report,
         }
-

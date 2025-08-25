@@ -94,6 +94,24 @@ services:
     restart: unless-stopped
     networks:
       - zabbix-net
+  analyzer-timeseries:
+    build:
+      context: ./src
+      dockerfile: agents/analyzer_timeseries/Dockerfile
+    container_name: analyzer-timeseries
+    environment:
+      TS_INPUT_DIR: /data/raw/timeseries
+      TS_OUTPUT_CSV: /data/processed/anomalies_timeseries.csv
+      TS_WINDOW_MIN: "120"
+      TS_ROLL_N: "5"
+      TS_THRESHOLD: "-0.1"
+    volumes:
+      - ./data:/data
+    depends_on:
+      - collector-job
+    networks:
+      - zabbix-net
+    restart: "no"
 
   collector-job:
     build:
@@ -103,6 +121,7 @@ services:
     volumes:
       - ./src/agents/collector:/app
       - ./data/processed:/data/processed
+      - ./data/raw:/data/raw
     depends_on:
       zabbix-web:
         condition: service_healthy
@@ -110,6 +129,14 @@ services:
       ZABBIX_URL: "http://zabbix-web:8080"
       ZABBIX_USER: "Admin"
       ZABBIX_PASS: "zabbix"
+      PYTHONPATH: /app/src
+      TS_ENABLED: "true"                # <--- habilita séries temporais
+      TS_ITEMS: "system.cpu.util[,user];system.cpu.util[,system]"  # <--- EXEMPLO
+      TS_LOOKBACK_MIN: "180"
+      TS_OUT_DIR: "/data/raw/timeseries"
+      COLLECT_INTERVAL_SEC: "30"            
+      ZBX_WINDOW_MIN: "5"              
+
     networks:
       - zabbix-net
     command: ["python", "main.py"]
@@ -122,6 +149,7 @@ services:
     environment:
       INPUT_FILE: /data/processed/anomalies_dataset.csv
       OUTPUT_FILE: /data/processed/dataset_ready.csv
+      PYTHONPATH: /app/src
     volumes:
       - ./data:/data
       - ./src/infrastructure:/app/infrastructure
@@ -137,8 +165,9 @@ services:
     environment:
       TRAIN_INPUT: /data/processed/dataset_labeled.csv
       MODEL_PATH: /data/models/anomaly_model.pkl
-      METRICS_PATH: /data/models/metrics.json
-      FEATURE_IMP_PATH: /data/models/feature_importances.csv
+      METRICS_PATH: /data/reports/metrics.json
+      FEATURE_IMP_PATH: /data/reports/feature_importances.csv
+      PYTHONPATH: /app
     volumes:
       - ./data:/data
       - ./src/infrastructure:/app/infrastructure
@@ -154,20 +183,32 @@ services:
     container_name: orchestrator-job
     environment:
       ORCH_INPUT: /data/processed/dataset_labeled.csv
-      MODEL_PATH: /data/models/anomaly_model.pkl
+      ORCH_TS_INPUT: /data/processed/anomalies_timeseries.csv
       ACTIONS_PENDING: /data/actions/pending_actions.jsonl
       ACTIONS_EXECUTED: /data/actions/executed_actions.jsonl
+      ORCH_STATE_PATH: /data/actions/.orchestrator_state.json
+
       THRESHOLD: "0.7"
       PRIORITY_MIN: "0.7"
+
+      TS_ENABLE: "true"
+      TS_SCORE_FIELD: "score"
+      TS_FLAG_FIELD: "is_incident"
+      TS_MIN_SCORE: "-0.1"
+
+      ORCH_LOOP_ENABLED: "true"
+      ORCH_LOOP_SECONDS: "20"
+      ORCH_DEBUG: "true"
+      PYTHONUNBUFFERED: "1"     # logs em tempo real
+    command: ["python", "-u", "main.py"]  # sem buffer de stdout
     volumes:
       - ./data:/data
       - ./src/infrastructure:/app/infrastructure
     depends_on:
-      - analyzer-job
-      - ml-trainer-job
+      - analyzer-timeseries
     networks:
       - zabbix-net
-    restart: "no"
+    restart: unless-stopped
   executor-job:
     build:
       context: ./src
@@ -176,6 +217,7 @@ services:
     environment:
       ACTIONS_PENDING: /data/actions/pending_actions.jsonl
       ACTIONS_EXECUTED: /data/actions/executed_actions.jsonl
+      PYTHONPATH: /app/src
     volumes:
       - ./data:/data
       - ./src/infrastructure:/app/infrastructure

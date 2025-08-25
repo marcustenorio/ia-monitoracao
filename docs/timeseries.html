@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Timeseries – CPU (Zabbix) • IA Monitoração</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js (gráficos) – CDN oficial -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#94a3b8;--text:#e5e7eb;--ok:#10b981;--warn:#f59e0b;--bad:#ef4444;--card:#111827;--chip:#1f2937}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);font-family:Inter,system-ui,Segoe UI,Roboto,Arial;color:var(--text)}
+    header{padding:20px 16px;border-bottom:1px solid #1f2937;position:sticky;top:0;background:linear-gradient(to bottom,rgba(15,23,42,.95),rgba(15,23,42,.85))}
+    header h1{margin:0;font-size:20px;font-weight:700}
+    header .sub{color:var(--muted);font-size:13px;margin-top:6px}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px}
+    .card{background:var(--card);border:1px solid #1f2937;border-radius:14px;padding:16px;margin-bottom:16px}
+    .row{display:flex;gap:16px;flex-wrap:wrap}
+    .half{flex:1 1 480px}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    .meta{color:var(--muted);font-size:12px;margin:6px 0 12px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px}
+    select,input,button{background:#0b1220;border:1px solid #334155;color:var(--text);border-radius:10px;padding:8px 10px;font-size:13px}
+    button{cursor:pointer}
+    .badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #334155;background:#0b1220;color:var(--muted)}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}
+    th,td{padding:10px;border-bottom:1px solid #1f2937;vertical-align:top}
+    th{color:#9ca3af;text-align:left;font-weight:600}
+    canvas{width:100%;height:360px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Timeseries – CPU (Zabbix)</h1>
+    <div class="sub">Fonte única: <span class="mono">data/processed/anomalies_timeseries.csv</span></div>
+  </header>
+
+  <div class="wrap">
+
+    <section class="card">
+      <div class="meta">Colunas esperadas: <span class="mono">ts, ts_iso, host, itemkey, value, score, threshold, is_incident</span></div>
+
+      <div class="controls">
+        <label>Host:
+          <select id="hostSel"></select>
+        </label>
+        <label>Item:
+          <select id="itemSel"></select>
+        </label>
+        <label>Auto-refresh (s):
+          <input id="refreshInp" type="number" min="0" step="5" value="10" style="width:90px"/>
+        </label>
+        <button id="applyBtn">Aplicar</button>
+        <span class="badge" id="summary"></span>
+      </div>
+
+      <div class="row">
+        <div class="half">
+          <canvas id="tsLine"></canvas>
+        </div>
+        <div class="half">
+          <table id="ts-table">
+            <thead>
+              <tr>
+                <th>ts_iso</th><th>Host</th><th>Item</th>
+                <th>Value</th><th>Score</th><th>Threshold</th><th>Flag</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+<script>
+const CSV_PATH = "../data/processed/anomalies_timeseries.csv"; // ajuste se servir de outro local
+let chart;
+
+// --- util ---
+async function fetchCSV(path){
+  const resp = await fetch(path, { cache: "no-store" });
+  if(!resp.ok) throw new Error(`Falha ao carregar ${path}`);
+  const text = await resp.text();
+  return parseCSV(text);
+}
+
+function parseCSV(text){
+  const lines = text.trim().split(/\r?\n/);
+  if(!lines.length) return [];
+  const header = splitCSVLine(lines[0]);
+  return lines.slice(1).map(line=>{
+    const cols = splitCSVLine(line);
+    const obj = {};
+    header.forEach((h,i)=>obj[h]=cols[i]);
+    return obj;
+  });
+}
+
+function splitCSVLine(line){
+  const out=[], re=/(?:,|\n|^)(?:"([^"]*(?:""[^"]*)*)"|([^",\n]*))/g;
+  let m, s=line;
+  while((m=re.exec(s))){
+    out.push(m[1]!==undefined ? m[1].replace(/""/g,'"') : m[2]);
+  }
+  return out;
+}
+
+function fmt(n, d=3){
+  const x = Number(n);
+  return Number.isFinite(x) ? x.toFixed(d) : n;
+}
+
+// popula selects com opções únicas
+function fillSelectOptions(rows){
+  const hostSel = document.getElementById('hostSel');
+  const itemSel = document.getElementById('itemSel');
+  const hosts = [...new Set(rows.map(r=>r.host))].sort();
+  const items = [...new Set(rows.map(r=>r.itemkey))].sort();
+
+  hostSel.innerHTML = hosts.map(h=>`<option value="${h}">${h}</option>`).join('');
+  itemSel.innerHTML = items.map(i=>`<option value="${i}">${i}</option>`).join('');
+
+  // Seleciona o primeiro grupo presente
+  if(hosts.length) hostSel.value = hosts[0];
+  if(items.length) itemSel.value = items[0];
+}
+
+function updateSummary(rows){
+  const s = document.getElementById('summary');
+  const total = rows.length;
+  const incidents = rows.filter(r=> String(r.is_incident).toLowerCase()==="true").length;
+  s.textContent = `Total: ${total} • Incidentes: ${incidents}`;
+}
+
+// desenha tabela (últimas 50 linhas do filtro)
+function renderTable(rows){
+  const tbody = document.querySelector("#ts-table tbody");
+  tbody.innerHTML = rows.slice(-50).reverse().map(r=>{
+    const flag = (String(r.is_incident).toLowerCase()==="true");
+    return `
+      <tr>
+        <td class="mono">${r.ts_iso||""}</td>
+        <td>${r.host||""}</td>
+        <td>${r.itemkey||""}</td>
+        <td class="mono">${fmt(r.value,6)}</td>
+        <td class="mono">${fmt(r.score,6)}</td>
+        <td class="mono">${fmt(r.threshold,3)}</td>
+        <td>${flag?'<span class="badge" style="color:#ef4444;border-color:#ef4444">incident</span>':'<span class="badge">ok</span>'}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// atualiza gráfico
+function renderChart(rows){
+  const ctx = document.getElementById('tsLine');
+  const labels = rows.map(r=> r.ts_iso);
+  const values = rows.map(r=> Number(r.value));
+  const thresholds = rows.map(r=> Number(r.threshold));
+
+  if(chart){ chart.destroy(); }
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Value', data: values, tension:.25 },
+        { label: 'Threshold', data: thresholds, borderDash:[6,6], tension:0 }
+      ]
+    },
+    options: {
+      responsive:true,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ position:'bottom' } },
+      scales:{ x:{ grid:{display:false} }, y:{ beginAtZero:false } }
+    }
+  });
+}
+
+async function loadAndRender(){
+  const all = await fetchCSV(CSV_PATH);
+  if(!all.length) return;
+
+  // primeira carga: preenche selects
+  if(!document.getElementById('hostSel').options.length){
+    fillSelectOptions(all);
+  }
+
+  const host = document.getElementById('hostSel').value;
+  const item = document.getElementById('itemSel').value;
+
+  // filtra e ordena por ts
+  const filtered = all
+    .filter(r => r.host===host && r.itemkey===item)
+    .sort((a,b)=> Number(a.ts) - Number(b.ts));
+
+  updateSummary(filtered);
+  renderTable(filtered);
+  renderChart(filtered);
+}
+
+let timer=null;
+function applySettings(){
+  const every = Number(document.getElementById('refreshInp').value||0);
+  if(timer){ clearInterval(timer); timer=null; }
+  if(every>0){
+    timer = setInterval(()=> loadAndRender().catch(console.warn), every*1000);
+  }
+  loadAndRender().catch(console.warn);
+}
+
+// boot
+document.getElementById('applyBtn').addEventListener('click', applySettings);
+document.getElementById('hostSel').addEventListener('change', applySettings);
+document.getElementById('itemSel').addEventListener('change', applySettings);
+
+applySettings(); // primeira execução
+</script>
+</body>
+</html>
+

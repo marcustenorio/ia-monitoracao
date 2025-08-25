@@ -1,0 +1,43 @@
+{
+  "0": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 853.0
+  },
+  "1": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 159.0
+  },
+  "accuracy": 1.0,
+  "macro avg": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 1012.0
+  },
+  "weighted avg": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1-score": 1.0,
+    "support": 1012.0
+  },
+  "_diagnostics_": {
+    "features": [
+      "priority",
+      "triggerid",
+      "lastchange",
+      "desc_len",
+      "host_count"
+    ],
+    "alt_threshold_metrics": {
+      "thr": 0.4,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "roc_auc": 1.0
+    }
+  }
+}

@@ -1,0 +1,11 @@
+ts,ts_iso,host,itemkey,value,score,threshold,is_incident
+1755538730,2025-08-18T17:38:50Z,Grafana,"system.cpu.util[,system]",0.672559,0.09270872476049058,-0.1,False
+1755538731,2025-08-18T17:38:51Z,Grafana,"system.cpu.util[,user]",1.606381,0.008832097572110897,-0.1,False
+1755538704,2025-08-18T17:38:24Z,Mysql Server,"system.cpu.util[,system]",0.696406,0.0937936765458714,-0.1,False
+1755538705,2025-08-18T17:38:25Z,Mysql Server,"system.cpu.util[,user]",2.247302,0.06377902653045997,-0.1,False
+1755538698,2025-08-18T17:38:18Z,Prometheus,"system.cpu.util[,system]",0.491069,0.053998813389623146,-0.1,False
+1755538699,2025-08-18T17:38:19Z,Prometheus,"system.cpu.util[,user]",1.599755,-0.0059789161427038495,-0.1,False
+1755538729,2025-08-18T17:38:49Z,Zabbix server,"system.cpu.util[,system]",0.679753,0.09843731085458907,-0.1,False
+1755538730,2025-08-18T17:38:50Z,Zabbix server,"system.cpu.util[,user]",1.6279,0.028141381230328166,-0.1,False
+ts,ts_iso,host,itemkey,value,score,threshold,is_incident
+1699999999,2025-01-01T00:00:00Z,Zabbix server,system.cpu.util[,user],95,-0.50,-0.10,True

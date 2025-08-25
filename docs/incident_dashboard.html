@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <title>Incidentes — Executados & Pendentes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root { --bg:#0f172a; --panel:#111827; --muted:#9ca3af; --accent:#22c55e; --warn:#ef4444; --card:#0b1220; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,'Helvetica Neue',Arial;color:#e5e7eb;background:var(--bg);}
+    header{padding:20px 24px;border-bottom:1px solid #1f2937;background:#0b1220;position:sticky;top:0;z-index:10}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px}
+    h1{margin:0;font-size:20px}
+    .grid{display:grid;gap:16px}
+    .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .card{background:var(--panel);border:1px solid #1f2937;border-radius:16px;padding:16px}
+    .muted{color:var(--muted);font-size:12px}
+    .kpi{font-weight:700;font-size:24px;margin-top:8px}
+    .ok{color:var(--accent)} .bad{color:var(--warn)}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{padding:10px;border-bottom:1px solid #1f2937;vertical-align:top}
+    th{color:#9ca3af;text-align:left;position:sticky;top:56px;background:var(--panel)}
+    tr:hover td{background:#0f172a}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #374151;background:#0b1220}
+    .pill.ok{border-color:#14532d;color:#22c55e}
+    .pill.bad{border-color:#7f1d1d;color:#ef4444}
+    .footer{color:#9ca3af;font-size:12px;margin-top:8px}
+    .chart-wrap{background:var(--panel);border:1px solid #1f2937;border-radius:16px;padding:16px}
+    @media (max-width: 960px){ .g4{grid-template-columns:1fr 1fr} }
+    @media (max-width: 640px){ .g4{grid-template-columns:1fr} th{top:0} }
+    code{background:#0b1220;border:1px solid #1f2937;border-radius:8px;padding:2px 6px}
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>Painel de Incidentes — Executados & Pendentes</h1>
+    <div class="muted" id="lastUpdate">Carregando…</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- KPIs -->
+  <section class="grid g4">
+    <div class="card">
+      <div class="muted">Pendentes</div>
+      <div class="kpi" id="kpiPending">0</div>
+    </div>
+    <div class="card">
+      <div class="muted">Executados</div>
+      <div class="kpi" id="kpiExecuted">0</div>
+    </div>
+    <div class="card">
+      <div class="muted">Hosts (únicos)</div>
+      <div class="kpi" id="kpiHosts">0</div>
+    </div>
+    <div class="card">
+      <div class="muted">Último evento</div>
+      <div class="kpi" id="kpiLastEvent">—</div>
+    </div>
+  </section>
+
+  <!-- Gráfico -->
+  <section class="chart-wrap" style="margin-top:16px">
+    <div class="muted">Incidentes por minuto (Pendentes vs. Executados)</div>
+    <canvas id="incidentsChart" height="80"></canvas>
+    <div class="footer">Fonte: <code>data/actions/*.jsonl</code></div>
+  </section>
+
+  <!-- Tabelas -->
+  <section class="grid" style="margin-top:16px">
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Pendentes</h3>
+      <table id="tblPending">
+        <thead>
+          <tr>
+            <th>Quando</th>
+            <th>Tipo</th>
+            <th>Host</th>
+            <th>Item/Descrição</th>
+            <th>Prioridade</th>
+            <th>Score</th>
+            <th>Fonte</th>
+            <th>ID</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="footer">Arquivo: <code>data/actions/pending_actions.jsonl</code></div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin:0 0 8px 0">Executados</h3>
+      <table id="tblExecuted">
+        <thead>
+          <tr>
+            <th>Executado em</th>
+            <th>Tipo</th>
+            <th>Host</th>
+            <th>Item/Descrição</th>
+            <th>Prioridade</th>
+            <th>Score</th>
+            <th>Resultado</th>
+            <th>ID</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="footer">Arquivo: <code>data/actions/executed_actions.jsonl</code></div>
+    </div>
+  </section>
+</main>
+
+<script>
+/* === util === */
+const PENDING_URL  = "../data/actions/pending_actions.jsonl";
+const EXECUTED_URL = "../data/actions/executed_actions.jsonl";
+
+function parseJSONL(text){
+  return text
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(l => l.length>0)
+    .map(l => { try { return JSON.parse(l); } catch { return null; } })
+    .filter(Boolean);
+}
+function short(s){ return (s||"").toString().slice(0,8); }
+function toISO(x){
+  if (!x && x !== 0) return null;
+  if (typeof x === "string"){
+    // já é ISO?
+    if (/^\d{4}-\d{2}-\d{2}T/.test(x)) return x;
+    return x; // deixe como veio
+  }
+  if (typeof x === "number"){
+    return new Date(x*1000).toISOString();
+  }
+  return null;
+}
+function fromHostInfo(host_info){
+  // host_info pode vir como string com lista "[{'hostid':'..','name':'..'}]"
+  if (!host_info) return "";
+  try{
+    // normalizar aspas simples -> duplas
+    const fixed = host_info.replace(/'/g,'"');
+    const arr = JSON.parse(fixed);
+    if (Array.isArray(arr) && arr.length>0 && arr[0].name) return arr[0].name;
+  }catch(e){}
+  return host_info;
+}
+function minuteBucket(iso){
+  if(!iso) return "—";
+  const d = new Date(iso);
+  const yy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth()+1).padStart(2,"0");
+  const dd = String(d.getUTCDate()).padStart(2,"0");
+  const hh = String(d.getUTCHours()).padStart(2,"0");
+  const mi = String(d.getUTCMinutes()).padStart(2,"0");
+  return `${yy}-${mm}-${dd} ${hh}:${mi}Z`;
+}
+
+/* === normalizadores === */
+
+// pendente (linhas do orchestrator: tabular ou timeseries)
+function normalizePending(o){
+  const type = o.type || "UNKNOWN";
+  const src  = o.source || "";
+  const id   = o.id || "";
+  let iso = o.ts_iso || o.ts || o.published_at || o.ts_executed; // vários formatos
+  iso = toISO(iso);
+
+  let host = o.host || fromHostInfo(o.host_info) || "";
+  const itemOrDesc = o.itemkey || o.description || "";
+  const prio = (o.priority != null) ? o.priority : "";
+  const score = (o.score != null) ? o.score : "";
+
+  return { iso, type, host, itemOrDesc, prio, score, source: src, id };
+}
+
+// executado (tem { action: {...}, result: {...}, ts_executed })
+function normalizeExecuted(o){
+  const id = o.id || "";
+  const iso = toISO(o.ts_executed) || toISO(o.ts_iso) || toISO(o.ts) || null;
+
+  const a = o.action || {};
+  const type = a.type || "UNKNOWN";
+  const src  = a.source || "";
+  const host = a.host || fromHostInfo(a.host_info) || "";
+  const itemOrDesc = a.itemkey || a.description || "";
+  const prio = (a.priority != null) ? a.priority : "";
+  const score = (a.score != null) ? a.score : "";
+  const result = o.result ? (o.result.status + (o.result.message? " — " + o.result.message : "")) : "";
+
+  return { iso, type, host, itemOrDesc, prio, score, source: src, id, result };
+}
+
+/* === render === */
+function renderTable(tbody, rows, isExecuted=false){
+  tbody.innerHTML = "";
+  for(const r of rows){
+    const tr = document.createElement("tr");
+    tr.innerHTML = isExecuted
+      ? `<td>${r.iso || "—"}</td>
+         <td><span class="pill ${r.type.includes("RAISE")?"bad":"ok"}">${r.type}</span></td>
+         <td>${r.host||"—"}</td>
+         <td>${r.itemOrDesc||"—"}</td>
+         <td>${r.prio!==""?r.prio:"—"}</td>
+         <td>${r.score!==""?r.score:"—"}</td>
+         <td>${r.result? r.result : r.source||"—"}</td>
+         <td><code>${short(r.id)}</code></td>`
+      : `<td>${r.iso || "—"}</td>
+         <td><span class="pill ${r.type.includes("RAISE")?"bad":"ok"}">${r.type}</span></td>
+         <td>${r.host||"—"}</td>
+         <td>${r.itemOrDesc||"—"}</td>
+         <td>${r.prio!==""?r.prio:"—"}</td>
+         <td>${r.score!==""?r.score:"—"}</td>
+         <td>${r.source||"—"}</td>
+         <td><code>${short(r.id)}</code></td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function buildCountsPerMinute(pend, exec){
+  const map = new Map();
+  const add = (arr, key) => {
+    for(const r of arr){
+      const b = minuteBucket(r.iso);
+      if(!map.has(b)) map.set(b, {pending:0, executed:0});
+      map.get(b)[key]++;
+    }
+  };
+  add(pend, "pending");
+  add(exec, "executed");
+  const labels = Array.from(map.keys()).sort();
+  const pData = labels.map(l => map.get(l).pending);
+  const eData = labels.map(l => map.get(l).executed);
+  return { labels, pData, eData };
+}
+
+function buildHostsSet(pend, exec){
+  const s = new Set();
+  pend.forEach(r => r.host && s.add(r.host));
+  exec.forEach(r => r.host && s.add(r.host));
+  return s;
+}
+
+async function loadAll(){
+  try{
+    const [penRes, exeRes] = await Promise.all([
+      fetch(PENDING_URL), fetch(EXECUTED_URL)
+    ]);
+    if(!penRes.ok || !exeRes.ok){
+      document.getElementById("lastUpdate").innerText =
+        "Não foi possível ler os arquivos (sirva o diretório via http://localhost:8000/).";
+      return;
+    }
+    const [penText, exeText] = await Promise.all([penRes.text(), exeRes.text()]);
+    const rawPending  = parseJSONL(penText);
+    const rawExecuted = parseJSONL(exeText);
+
+    const pending  = rawPending.map(normalizePending).filter(r => r);
+    const executed = rawExecuted.map(normalizeExecuted).filter(r => r);
+
+    // KPIs
+    document.getElementById("kpiPending").innerText  = pending.length;
+    document.getElementById("kpiExecuted").innerText = executed.length;
+    document.getElementById("kpiHosts").innerText    = buildHostsSet(pending, executed).size;
+    const allTimes = [...pending, ...executed].map(r => r.iso).filter(Boolean).sort();
+    document.getElementById("kpiLastEvent").innerText = allTimes.length ? allTimes[allTimes.length-1] : "—";
+    document.getElementById("lastUpdate").innerText = "Atualizado: " + new Date().toISOString();
+
+    // Tabelas
+    renderTable(document.querySelector("#tblPending tbody"), pending, false);
+    renderTable(document.querySelector("#tblExecuted tbody"), executed, true);
+
+    // Gráfico
+    const {labels, pData, eData} = buildCountsPerMinute(pending, executed);
+    const ctx = document.getElementById("incidentsChart").getContext("2d");
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Pendentes', data: pData },
+          { label: 'Executados', data: eData }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 12 } },
+          y: { beginAtZero: true, precision: 0 }
+        },
+        plugins: { legend: { position: 'top' } }
+      }
+    });
+
+  }catch(err){
+    document.getElementById("lastUpdate").innerText = "Erro ao carregar: " + err.message;
+    console.error(err);
+  }
+}
+
+loadAll();
+
+// atualização automática a cada 20s (opcional)
+setInterval(loadAll, 20000);
+</script>
+</body>
+</html>

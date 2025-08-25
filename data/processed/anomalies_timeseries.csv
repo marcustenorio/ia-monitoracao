@@ -1,0 +1,37 @@
+ts,ts_iso,host,itemkey,value,score,threshold,is_incident
+1755556049,2025-08-18T22:27:29Z,Zabbix server,"system.cpu.util[,system]",1.759091,0.0,-0.1,False
+1755556069,2025-08-18T22:27:49Z,Zabbix server,"system.cpu.util[,system]",2.788602,0.0,-0.1,False
+1755556129,2025-08-18T22:28:49Z,Zabbix server,"system.cpu.util[,system]",0.923188,0.0,-0.1,False
+1755556189,2025-08-18T22:29:49Z,Zabbix server,"system.cpu.util[,system]",0.576114,0.0,-0.1,False
+1755556249,2025-08-18T22:30:49Z,Zabbix server,"system.cpu.util[,system]",0.493504,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Zabbix server,"system.cpu.util[,user]",2.851925,0.0,-0.1,False
+1755556070,2025-08-18T22:27:50Z,Zabbix server,"system.cpu.util[,user]",4.067157,0.0,-0.1,False
+1755556130,2025-08-18T22:28:50Z,Zabbix server,"system.cpu.util[,user]",1.443395,0.0,-0.1,False
+1755556190,2025-08-18T22:29:50Z,Zabbix server,"system.cpu.util[,user]",1.05123,0.0,-0.1,False
+1755556250,2025-08-18T22:30:50Z,Zabbix server,"system.cpu.util[,user]",0.88255,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Prometheus,"system.cpu.util[,system]",1.792888,0.0,-0.1,False
+1755556098,2025-08-18T22:28:18Z,Prometheus,"system.cpu.util[,system]",2.819408,0.0,-0.1,False
+1755556158,2025-08-18T22:29:18Z,Prometheus,"system.cpu.util[,system]",0.688738,0.0,-0.1,False
+1755556218,2025-08-18T22:30:18Z,Prometheus,"system.cpu.util[,system]",0.555057,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Prometheus,"system.cpu.util[,user]",2.854738,0.0,-0.1,False
+1755556099,2025-08-18T22:28:19Z,Prometheus,"system.cpu.util[,user]",3.914471,0.0,-0.1,False
+1755556159,2025-08-18T22:29:19Z,Prometheus,"system.cpu.util[,user]",1.236037,0.0,-0.1,False
+1755556219,2025-08-18T22:30:19Z,Prometheus,"system.cpu.util[,user]",0.864872,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Grafana,"system.cpu.util[,system]",1.817744,0.0,-0.1,False
+1755556070,2025-08-18T22:27:50Z,Grafana,"system.cpu.util[,system]",2.809912,0.0,-0.1,False
+1755556130,2025-08-18T22:28:50Z,Grafana,"system.cpu.util[,system]",0.914634,0.0,-0.1,False
+1755556190,2025-08-18T22:29:50Z,Grafana,"system.cpu.util[,system]",0.578869,0.0,-0.1,False
+1755556250,2025-08-18T22:30:50Z,Grafana,"system.cpu.util[,system]",0.486587,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Grafana,"system.cpu.util[,user]",2.900272,0.0,-0.1,False
+1755556071,2025-08-18T22:27:51Z,Grafana,"system.cpu.util[,user]",4.069953,0.0,-0.1,False
+1755556131,2025-08-18T22:28:51Z,Grafana,"system.cpu.util[,user]",1.432987,0.0,-0.1,False
+1755556191,2025-08-18T22:29:51Z,Grafana,"system.cpu.util[,user]",1.042791,0.0,-0.1,False
+1755556251,2025-08-18T22:30:51Z,Grafana,"system.cpu.util[,user]",0.878379,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Mysql Server,"system.cpu.util[,system]",1.893166,0.0,-0.1,False
+1755556104,2025-08-18T22:28:24Z,Mysql Server,"system.cpu.util[,system]",2.739496,0.0,-0.1,False
+1755556164,2025-08-18T22:29:24Z,Mysql Server,"system.cpu.util[,system]",0.639292,0.0,-0.1,False
+1755556224,2025-08-18T22:30:24Z,Mysql Server,"system.cpu.util[,system]",0.552176,0.0,-0.1,False
+1755556049,2025-08-18T22:27:29Z,Mysql Server,"system.cpu.util[,user]",2.956101,0.0,-0.1,False
+1755556105,2025-08-18T22:28:25Z,Mysql Server,"system.cpu.util[,user]",3.615884,0.0,-0.1,False
+1755556165,2025-08-18T22:29:25Z,Mysql Server,"system.cpu.util[,user]",1.19885,0.0,-0.1,False
+1755556225,2025-08-18T22:30:25Z,Mysql Server,"system.cpu.util[,user]",0.852066,0.0,-0.1,False
